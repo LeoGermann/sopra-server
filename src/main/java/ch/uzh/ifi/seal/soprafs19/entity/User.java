@@ -1,35 +1,41 @@
 package ch.uzh.ifi.seal.soprafs19.entity;
 
 import ch.uzh.ifi.seal.soprafs19.constant.UserStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
+
+import java.util.Date;
 
 @Entity
 public class User implements Serializable {
-	
 
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue
 	private Long id;
-	
-	@Column(nullable = false) 
-	private String name;
-	
-	@Column(nullable = false, unique = true) 
+
+	@Column(nullable = false, unique = true)
 	private String username;
-	
-	@Column(nullable = false, unique = true) 
+
+	@Column(nullable = false)
+	private String password;
+
+	@Column(nullable = false, unique = true)
 	private String token;
 
 	@Column(nullable = false)
 	private UserStatus status;
+
+	@Column(nullable = false)
+	private Date creationDate;
+
+	@Column
+	private Date birthday;
 
 	public Long getId() {
 		return id;
@@ -39,12 +45,13 @@ public class User implements Serializable {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getPassword() {
+		return password;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	public void setPassword(String name) {
+		this.password = name;
 	}
 
 	public String getUsername() {
@@ -69,6 +76,22 @@ public class User implements Serializable {
 
 	public void setStatus(UserStatus status) {
 		this.status = status;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setBirthday(Date birthday) {
+		this.birthday = birthday;
+	}
+
+	public Date getBirthday() {
+		return birthday;
 	}
 
 	@Override
