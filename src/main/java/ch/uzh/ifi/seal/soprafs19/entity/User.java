@@ -3,15 +3,23 @@ package ch.uzh.ifi.seal.soprafs19.entity;
 import ch.uzh.ifi.seal.soprafs19.constant.UserStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
-
-import javax.persistence.*;
-
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
 @Entity
+@JsonIgnoreProperties(value={"password"}, allowSetters = true)
+
 public class User implements Serializable {
+
 
 	private static final long serialVersionUID = 1L;
 
@@ -19,11 +27,15 @@ public class User implements Serializable {
 	@GeneratedValue
 	private Long id;
 
+	@Column (nullable = false)
+	@JsonProperty("password")
+	private String password;
+
 	@Column(nullable = false, unique = true)
 	private String username;
 
-	@Column(nullable = false)
-	private String password;
+	@Column
+	private String birthday;
 
 	@Column(nullable = false, unique = true)
 	private String token;
@@ -31,11 +43,8 @@ public class User implements Serializable {
 	@Column(nullable = false)
 	private UserStatus status;
 
-	@Column(nullable = false)
-	private Date creationDate;
-
-	@Column
-	private Date birthday;
+	@Column (nullable = false)
+	private String creationDate;
 
 	public Long getId() {
 		return id;
@@ -49,9 +58,8 @@ public class User implements Serializable {
 		return password;
 	}
 
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-	public void setPassword(String name) {
-		this.password = name;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public String getUsername() {
@@ -62,13 +70,15 @@ public class User implements Serializable {
 		this.username = username;
 	}
 
+	public void setBirthday (String birthday) { this.birthday = birthday; }
+
+	public String getBirthday() {return birthday; }
+
 	public String getToken() {
 		return token;
 	}
 
-	public void setToken(String token) {
-		this.token = token;
-	}
+	public void setToken(String token) { this.token = token; }
 
 	public UserStatus getStatus() {
 		return status;
@@ -78,21 +88,14 @@ public class User implements Serializable {
 		this.status = status;
 	}
 
-	public void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
+	public void setCreationDate () {
+		Date today = new Date();
+		SimpleDateFormat todayFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+		this.creationDate = todayFormat.format(today);
+		//this.creationDate = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
 	}
 
-	public Date getCreationDate() {
-		return creationDate;
-	}
-
-	public void setBirthday(Date birthday) {
-		this.birthday = birthday;
-	}
-
-	public Date getBirthday() {
-		return birthday;
-	}
+	public String getCreationDate() { return creationDate; }
 
 	@Override
 	public boolean equals(Object o) {

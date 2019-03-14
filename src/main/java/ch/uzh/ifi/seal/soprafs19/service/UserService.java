@@ -6,12 +6,11 @@ import ch.uzh.ifi.seal.soprafs19.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
-
-import java.util.Date;
 
 @Service
 @Transactional
@@ -23,78 +22,66 @@ public class UserService {
 
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(@Qualifier("userRepository") UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
+    // ALWAYS adds the user and returns all users
     public Iterable<User> getUsers() {
         return this.userRepository.findAll();
     }
 
-    public User createUser(User newUser) {
-        newUser.setToken(UUID.randomUUID().toString());
-        newUser.setStatus(UserStatus.ONLINE);
-        newUser.setCreationDate(new Date());
-        userRepository.save(newUser);
-        log.debug("Created Information for User: {}", newUser);
-        return newUser;
-    }
-
-    public Boolean userExistsByUsername(String username){
-        //returns true if it already exists!
-        return this.userRepository.existsByUsername(username);
-    }
-
-    public Boolean userExistsById(long userId) {
-        //returns true if it exists!
-        return this.userRepository.existsById(userId);
-    }
-
-    public boolean correctPassword(String username, String password) {
-        //returns true if the Password is correct!
-        if (this.userRepository.existsByUsername(username)) {
-            User user = this.userRepository.findByUsername(username);
-            return password.equals(user.getPassword());
-        }
-        return false;
+    public User getUser(long id){
+        return this.userRepository.findById(id);
     }
 
     public User getUserByUsername(String username) {
         return this.userRepository.findByUsername(username);
     }
 
-    public User getUserById(long userId) {
-        return this.userRepository.findById(userId);
+    public void saveLogin(User user){
+        this.userRepository.save(user);
     }
 
-    public void updateUser(User user) {
-        //check if user already exists
-        if (!userExistsById(user.getId())) {
-            return;
-        }
+    public void saveLogout(User user){
+        this.userRepository.save(user);
+    }
+    /*
+    public void deleteUser(long id){
+        User user = this.userRepository.findById(id);
+        user.setStatus(UserStatus.OFFLINE);
+        this.userRepository.delete(user);
+    }
+    */
 
-        //update necessary parts
-        User x = getUserById(user.getId());
-        if (user.getUsername() != null) {
-            x.setUsername(user.getUsername());
-        }
-        if (user.getBirthday() != null) {
-            x.setBirthday(user.getBirthday());
-        }
-
-        //actually update
-        this.userRepository.save(x);
+    public User createUser(User newUser) {
+        /**if (userRepository.existsUserByUsername(newUser.getUsername())){
+         throw new ArithmeticException("Username already exists");
+         } else {**/
+        newUser.setToken(UUID.randomUUID().toString());
+        newUser.setStatus(UserStatus.OFFLINE); //default is OFFLINE. If user loggs in, its changed to ONLINE
+        newUser.setCreationDate();
+        userRepository.save(newUser);
+        log.debug("Created Information for User: {}", newUser);
+        return newUser;
     }
 
-    public boolean checkUser(User toCheck) {
-        //checks the users Token and Password for validity
-        //returns true if both are correct!
-        if (this.userRepository.existsByToken(toCheck.getToken())) {
-            User ogUser = this.userRepository.findByToken(toCheck.getToken());
-            String ogPassword = ogUser.getPassword();
-            return ogPassword.equals(toCheck.getPassword());
+    public User updateUser(long id, User updatedUser){
+
+        User oldUser = getUser(id);
+        String username = updatedUser.getUsername();
+
+        if(!username.equals(oldUser.getUsername())  && updatedUser.getUsername() != null) {
+            oldUser.setUsername(username);
         }
-        return false;
+
+        String birthday = updatedUser.getBirthday();
+        if (!birthday.equals(oldUser.getBirthday()) && updatedUser.getBirthday() != null) {
+            oldUser.setBirthday(birthday);
+        }
+
+        this.userRepository.save(oldUser); //save the changes
+        return oldUser;
     }
 
 }
